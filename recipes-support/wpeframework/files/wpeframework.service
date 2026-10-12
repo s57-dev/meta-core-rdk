@@ -1,0 +1,15 @@
+[Unit]
+Description=Thunder (WPEFramework) RPC daemon
+After=network.target
+
+[Service]
+Type=notify
+Environment="XDG_RUNTIME_DIR=/tmp"
+ExecStart=/usr/bin/WPEFramework -b
+ExecStartPost=-/bin/sh -c '/bin/echo ${MAINPID} > /tmp/wpeframework.pid'
+KillSignal=SIGKILL
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

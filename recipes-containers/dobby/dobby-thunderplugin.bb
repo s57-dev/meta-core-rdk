@@ -1,0 +1,21 @@
+SUMMARY = "Dobby Thunder Plugin"
+DESCRIPTION = "Allows containers to access Thunder via JSON-RPC."
+LICENSE = "Apache-2.0"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=c466d4ab8a68655eb1edf0bf8c1a8fb8"
+
+include dobby.inc
+
+DEPENDS = "dobby wpeframework-clientlibraries"
+
+S = "${WORKDIR}/git"
+OECMAKE_SOURCEPATH = "${S}/rdkPlugins/Thunder"
+
+inherit pkgconfig cmake
+
+EXTRA_OECMAKE = "-DCMAKE_BUILD_TYPE=Debug -DEXTERNAL_THUNDER_PLUGIN_BUILD=ON"
+
+INSANE_SKIP:${PN} += "installed-vs-shipped dev-so"
+SOLIBS = ".so"
+FILES_SOLIBSDEV = ""
+
+FILES:${PN} += "${libdir}/plugins/dobby/*.so*"

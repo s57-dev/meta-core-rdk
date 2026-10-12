@@ -1,0 +1,15 @@
+--- a/plugin/USBDeviceImplementation.cpp
++++ b/plugin/USBDeviceImplementation.cpp
+@@ -272,7 +272,12 @@
+     int retValue = LIBUSB_SUCCESS;
+     LOGINFO("Entry");
+ 
++#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x0100010A)
+     retValue = libusb_init_context(/*ctx=*/NULL, /*options=*/NULL, /*num_options=*/0);
++#else
++    /* Kirkstone libusb 1.0.26 lacks libusb_init_context (added in 1.0.27). */
++    retValue = libusb_init(NULL);
++#endif
+ 
+     if (LIBUSB_SUCCESS != retValue)
+     {

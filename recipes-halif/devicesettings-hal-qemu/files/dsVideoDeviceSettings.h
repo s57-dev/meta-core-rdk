@@ -1,0 +1,53 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2017 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+*/
+
+#ifndef _DS_VIDEODEVICESETTINGS_H_
+#define _DS_VIDEODEVICESETTINGS_H_
+
+#include "dsUtl.h"
+#include "dsTypes.h"
+
+#ifndef DS_SETTINGS_FALLBACK_UNUSED
+#if defined(__GNUC__) || defined(__clang__)
+#define DS_SETTINGS_FALLBACK_UNUSED __attribute__((unused))
+#else
+#define DS_SETTINGS_FALLBACK_UNUSED
+#endif
+#endif
+
+#ifdef DS_HAL_EXPORT_CONFIG_SYMBOLS
+extern dsVideoConfig_t  kVideoDeviceConfigs[];
+extern int              kVideoDeviceConfigs_size;
+extern int              kNumVideoDevices;
+#else /* !DS_HAL_EXPORT_CONFIG_SYMBOLS */
+
+#define kNumVideoDevices 1
+
+static dsVideoConfig_t kConfigs[] DS_SETTINGS_FALLBACK_UNUSED = {
+	{
+		0,
+		NULL,
+		dsVIDEO_ZOOM_NONE,
+	},
+};
+#endif /* !DS_HAL_EXPORT_CONFIG_SYMBOLS */
+
+#endif /* _DS_VIDEODEVICESETTINGS_H_ */
