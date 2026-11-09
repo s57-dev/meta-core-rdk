@@ -1,0 +1,104 @@
+From: Core RDK <devnull@rdkcentral.com>
+Subject: [PATCH] westeros-main: map EV_ABS ABS_X/ABS_Y for pointer (QEMU usb-tablet)
+
+QEMU usb-tablet reports ABS_X/ABS_Y; Westeros only handled REL motion,
+so clicks missed while scroll could still seem usable. Scale ABS via
+EVIOCGABS (fallback 0..32767) and flush motion before button events.
+
+--- a/westeros-main.cpp	2026-10-30 16:21:38.356880906 +0100
++++ b/westeros-main.cpp	2026-10-30 16:21:38.356960112 +0100
+@@ -742,6 +742,10 @@
+    int mouseAccel= 1;
+    unsigned int mouseX= 0;
+    unsigned int mouseY= 0;
++   int absXMin= 0, absXMax= 0;
++   int absYMin= 0, absYMax= 0;
++   bool absXRangeValid= false;
++   bool absYRangeValid= false;
+    unsigned int outputWidth= 0, outputHeight= 0;
+    bool mouseEnterSent= false;
+    bool mouseMoved= false;
+@@ -817,6 +821,20 @@
+                                  {
+                                     unsigned int keyCode= e.code;
+                                     unsigned int keyState;
++
++                                    /* Tablet packets are often ABS_* then BTN_* then SYN.
++                                     * Publish motion before the button so focus/hit-test
++                                     * uses the new position (move is otherwise deferred to SYN). */
++                                    if ( mouseMoved )
++                                    {
++                                       if ( !mouseEnterSent )
++                                       {
++                                          WstCompositorPointerEnter( inCtx->wctx );
++                                          mouseEnterSent= true;
++                                       }
++                                       WstCompositorPointerMoveEvent( inCtx->wctx, mouseX, mouseY );
++                                       mouseMoved= false;
++                                    }
+                                     
+                                     if ( !mouseEnterSent )
+                                     {
+@@ -968,6 +986,62 @@
+                         case EV_ABS:
+                            switch( e.code )
+                            {
++                              case ABS_X:
++                                 if ( !outputWidth || !outputHeight )
++                                 {
++                                    WstCompositorGetOutputSize( inCtx->wctx, &outputWidth, &outputHeight );
++                                 }
++                                 if ( !absXRangeValid )
++                                 {
++                                    struct input_absinfo absinfo;
++                                    if ( ioctl( inCtx->deviceFds[i].fd, EVIOCGABS(ABS_X), &absinfo ) == 0 &&
++                                         absinfo.maximum > absinfo.minimum )
++                                    {
++                                       absXMin= absinfo.minimum;
++                                       absXMax= absinfo.maximum;
++                                    }
++                                    else
++                                    {
++                                       absXMin= 0;
++                                       absXMax= 32767;
++                                    }
++                                    absXRangeValid= true;
++                                 }
++                                 if ( outputWidth && absXMax > absXMin )
++                                 {
++                                    mouseX= (unsigned int)(((long long)(e.value - absXMin) * outputWidth) / (absXMax - absXMin));
++                                    if ( mouseX > outputWidth ) mouseX= outputWidth;
++                                    mouseMoved= true;
++                                 }
++                                 break;
++                              case ABS_Y:
++                                 if ( !outputWidth || !outputHeight )
++                                 {
++                                    WstCompositorGetOutputSize( inCtx->wctx, &outputWidth, &outputHeight );
++                                 }
++                                 if ( !absYRangeValid )
++                                 {
++                                    struct input_absinfo absinfo;
++                                    if ( ioctl( inCtx->deviceFds[i].fd, EVIOCGABS(ABS_Y), &absinfo ) == 0 &&
++                                         absinfo.maximum > absinfo.minimum )
++                                    {
++                                       absYMin= absinfo.minimum;
++                                       absYMax= absinfo.maximum;
++                                    }
++                                    else
++                                    {
++                                       absYMin= 0;
++                                       absYMax= 32767;
++                                    }
++                                    absYRangeValid= true;
++                                 }
++                                 if ( outputHeight && absYMax > absYMin )
++                                 {
++                                    mouseY= (unsigned int)(((long long)(e.value - absYMin) * outputHeight) / (absYMax - absYMin));
++                                    if ( mouseY > outputHeight ) mouseY= outputHeight;
++                                    mouseMoved= true;
++                                 }
++                                 break;
+                               case ABS_MT_SLOT:
+                                  currTouchSlot= e.value;
+                                  break;

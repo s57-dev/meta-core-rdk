@@ -1,0 +1,20 @@
+[Unit]
+Description=WPE MiniBrowser demo (HLS.js test page)
+After=westeros.service network-online.target
+Wants=westeros.service network-online.target
+Requires=westeros.service
+
+[Service]
+Type=simple
+Environment=XDG_RUNTIME_DIR=/run
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=WPE_BACKEND_LIBRARY=/usr/lib/libWPEBackend-fdo-1.0.so.1
+Environment=WEBKIT_EXEC_PATH=/usr/libexec/wpe-webkit-2.0
+Environment=WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
+ExecStartPre=/bin/sh -c 'i=0; while [ ! -e /run/wayland-0 ] && [ $i -lt 60 ]; do i=$((i+1)); sleep 1; done; test -e /run/wayland-0'
+ExecStart=/usr/libexec/wpe-webkit-2.0/MiniBrowser --size=1280x720 https://hlsjs.video-dev.org/demo/
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

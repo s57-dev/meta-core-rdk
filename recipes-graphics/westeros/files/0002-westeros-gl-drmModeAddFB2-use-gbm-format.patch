@@ -1,0 +1,68 @@
+--- a/westeros-gl/westeros-gl.c	2026-10-29 12:21:42.185818662 +0100
++++ b/westeros-gl/westeros-gl.c	2026-10-29 12:21:42.222549421 +0100
+@@ -6469,17 +6469,23 @@
+                   else
+                   #endif
+                   {
+-                     rc= drmModeAddFB( ctx->drmFd,
+-                                       nw->width,
+-                                       nw->height,
+-                                       32,
+-                                       32,
+-                                       stride,
+-                                       handle,
+-                                       &fbId );
++                     {
++                        uint32_t handles[4] = { handle, 0, 0, 0 };
++                        uint32_t strides[4] = { stride, 0, 0, 0 };
++                        uint32_t offsets[4] = { 0, 0, 0, 0 };
++                        rc= drmModeAddFB2( ctx->drmFd,
++                                           nw->width,
++                                           nw->height,
++                                           gbm_bo_get_format(bo),
++                                           handles,
++                                           strides,
++                                           offsets,
++                                           &fbId,
++                                           0 );
++                     }
+                      if ( rc )
+                      {
+-                        ERROR("wstSwapDRMBuffersAtomic: drmModeAddFB rc %d errno %d", rc, errno);
++                        ERROR("wstSwapDRMBuffersAtomic: drmModeAddFB2 rc %d errno %d", rc, errno);
+                         gbm_surface_release_buffer(gs, bo);
+                      }
+                   }
+@@ -6915,17 +6921,23 @@
+                handle= gbm_bo_get_handle(bo).u32;
+                stride= gbm_bo_get_stride(bo);
+ 
+-               rc= drmModeAddFB( ctx->drmFd,
+-                                 ctx->modeInfo->hdisplay,
+-                                 ctx->modeInfo->vdisplay,
+-                                 32,
+-                                 32,
+-                                 stride,
+-                                 handle,
+-                                 &nw->fbId );
++               {
++                  uint32_t handles[4] = { handle, 0, 0, 0 };
++                  uint32_t strides[4] = { stride, 0, 0, 0 };
++                  uint32_t offsets[4] = { 0, 0, 0, 0 };
++                  rc= drmModeAddFB2( ctx->drmFd,
++                                     ctx->modeInfo->hdisplay,
++                                     ctx->modeInfo->vdisplay,
++                                     gbm_bo_get_format(bo),
++                                     handles,
++                                     strides,
++                                     offsets,
++                                     &nw->fbId,
++                                     0 );
++               }
+                 if ( rc )
+                 {
+-                   ERROR("wstSwapDRMBuffers: drmModeAddFB rc %d errno %d", rc, errno);
++                   ERROR("wstSwapDRMBuffers: drmModeAddFB2 rc %d errno %d", rc, errno);
+                    goto exit;
+                 }
+                 wstUpdateResources( WSTRES_FB_GRAPHICS, true, nw->fbId, __LINE__);

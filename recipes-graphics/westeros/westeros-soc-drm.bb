@@ -5,7 +5,11 @@ LICENSE = "Apache-2.0"
 
 LICENSE_LOCATION = "${S}/LICENSE"
 LIC_FILES_CHKSUM = "file://${LICENSE_LOCATION};md5=7df5a8706277b586ca000838046993d1"
-SRC_URI = "${WESTEROS_SOC_URI}"
+SRC_URI = "${WESTEROS_SOC_URI} \
+           file://qemu-user-preferred-size.patch \
+           file://0001-westeros-gl-xrgb-fallback-virtio-gpu.patch \
+           file://0002-westeros-gl-drmModeAddFB2-use-gbm-format.patch \
+"
 
 S = "${WORKDIR}/git"
 

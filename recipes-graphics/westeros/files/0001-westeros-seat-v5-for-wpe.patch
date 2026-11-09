@@ -1,0 +1,39 @@
+--- a/westeros-compositor.cpp
++++ b/westeros-compositor.cpp
+@@ -3899,7 +3899,7 @@
+       goto exit;
+    }
+    
+-   if (!wl_global_create(ctx->display, &wl_seat_interface, 4, ctx->seat, wstSeatBind))
++   if (!wl_global_create(ctx->display, &wl_seat_interface, 5, ctx->seat, wstSeatBind))
+    {
+       ERROR("unable to create wl_seat interface");
+       goto exit;
+@@ -4987,11 +4987,17 @@
+ #endif /* USE_XDG_STABLE */
+ };
+ 
++static void wstISeatRelease( struct wl_client *client, struct wl_resource *resource )
++{
++   wl_resource_destroy( resource );
++}
++
+ static const struct wl_seat_interface seat_interface=
+ {
+    wstISeatGetPointer,
+    wstISeatGetKeyboard,
+-   wstISeatGetTouch   
++   wstISeatGetTouch,
++   wstISeatRelease
+ };
+ 
+ static const struct wl_keyboard_interface keyboard_interface=
+@@ -8442,7 +8448,7 @@
+    
+    resource= wl_resource_create(client, 
+                                 &wl_seat_interface,
+-                                MIN(version, 4), 
++                                MIN(version, 5), 
+                                 id);
+    if (!resource) 
+    {

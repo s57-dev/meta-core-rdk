@@ -1,0 +1,57 @@
+--- a/westeros-gl/westeros-gl.c	2026-10-29 12:16:23.860980412 +0100
++++ b/westeros-gl/westeros-gl.c	2026-10-29 12:16:23.862356353 +0100
+@@ -5085,6 +5085,7 @@
+                                  }
+                                  break;
+                               case DRM_FORMAT_ARGB8888:
++                              case DRM_FORMAT_XRGB8888:
+                                  isGraphics= true;
+                                  break;
+                               default:
+@@ -8230,11 +8231,41 @@
+ 
+          if ( !nativeWindow )
+          {
+-            nativeWindow= gbm_surface_create(ctx->gbm,
+-                                             width, height,
+-                                             GBM_FORMAT_ARGB8888,
+-                                             GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING );
+-            DEBUG("native window: %p", nativeWindow);
++            /* Prefer ARGB; fall back to XRGB for virtio-gpu primary (XR24 only). */
++            uint32_t tryFormats[]= { GBM_FORMAT_ARGB8888, GBM_FORMAT_XRGB8888 };
++            unsigned fi;
++            for ( fi= 0; fi < sizeof(tryFormats)/sizeof(tryFormats[0]); ++fi )
++            {
++               bool formatOk= true;
++               if ( nwItem->windowPlane && nwItem->windowPlane->formatCount > 0 )
++               {
++                  int i;
++                  formatOk= false;
++                  for ( i= 0; i < nwItem->windowPlane->formatCount; ++i )
++                  {
++                     if ( nwItem->windowPlane->formats[i].format == tryFormats[fi] )
++                     {
++                        formatOk= true;
++                        break;
++                     }
++                  }
++               }
++               if ( !formatOk )
++               {
++                  continue;
++               }
++               nativeWindow= gbm_surface_create(ctx->gbm,
++                                                width, height,
++                                                tryFormats[fi],
++                                                GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING );
++               DEBUG("native window: %p format %c%c%c%c", nativeWindow,
++                     (tryFormats[fi]) & 0xff, (tryFormats[fi] >> 8) & 0xff,
++                     (tryFormats[fi] >> 16) & 0xff, (tryFormats[fi] >> 24) & 0xff);
++               if ( nativeWindow )
++               {
++                  break;
++               }
++            }
+          }
+ 
+          if ( nativeWindow )

@@ -48,18 +48,27 @@ do_install:append() {
     install -m 0755 ${S}/systemd/westeros-init ${D}${bindir}/westeros-init
     install -m 0755 ${WORKDIR}/westeros-smoke.sh ${D}${bindir}/westeros-smoke.sh
 
-    # DRM/qemuarm: preload SoC GL interposer; use a virtio-gpu-friendly mode.
+    # DRM/qemuarm: preload SoC GL interposer; match monorepo qemu-boot 1280x720.
     sed -i \
         -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_DEBUG=${WESTEROS_GL_DEBUG:-1}' \
         -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_DRM_CARD=${WESTEROS_DRM_CARD:-/dev/dri/card0}' \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_MODE=${WESTEROS_GL_MODE:-1024x768}' \
         -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_USE_PREFERRED_MODE=${WESTEROS_GL_USE_PREFERRED_MODE:-1}' \
+        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_GRAPHICS_MAX_SIZE=${WESTEROS_GL_GRAPHICS_MAX_SIZE:-1280x720}' \
+        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_USER_PREFERRED_SIZE=${WESTEROS_GL_USER_PREFERRED_SIZE:-1280x720}' \
         -e '/^exec \/usr\/bin\/westeros/i export LD_PRELOAD=${LD_PRELOAD:-/usr/lib/libwesteros_gl.so.0}' \
         ${D}${bindir}/westeros-init
     sed -i -e "s#/usr/lib#${libdir}#g" ${D}${bindir}/westeros-init
 
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${S}/systemd/westeros-env ${D}${sysconfdir}/default/westeros-env
+    # KEY=VALUE only (EnvironmentFile); same knobs as meta-rpi-qemu westeros.bbappend.
+    printf '%s\n' \
+        'WESTEROS_DRM_CARD=/dev/dri/card0' \
+        'LD_PRELOAD=/usr/lib/libwesteros_gl.so.0.0.0' \
+        'WESTEROS_GL_USE_PREFERRED_MODE=1' \
+        'WESTEROS_GL_GRAPHICS_MAX_SIZE=1280x720' \
+        'WESTEROS_GL_USER_PREFERRED_SIZE=1280x720' \
+        >> ${D}${sysconfdir}/default/westeros-env
 
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${S}/systemd/westeros.service ${D}${systemd_system_unitdir}/westeros.service
