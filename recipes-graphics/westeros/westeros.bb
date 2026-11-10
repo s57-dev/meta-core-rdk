@@ -4,9 +4,9 @@ include westeros.inc
 
 SRC_URI = "${WESTEROS_URI} \
            file://westeros-smoke.sh \
+           file://0001-westeros-seat-v5-for-wpe.patch \
 "
 
-# inctest builds westeros_test (EGL-only when --enable-embedded, the default).
 PACKAGECONFIG ??= "incapp inctest increndergl incsbprotocol xdgv4"
 PACKAGECONFIG[incapp] = "--enable-app=yes"
 PACKAGECONFIG[inctest] = "--enable-test=yes"
@@ -22,7 +22,6 @@ PACKAGECONFIG[explicit-sync] = "--enable-lexpsyncprotocol=yes, , wayland-protoco
 
 S = "${WORKDIR}/git"
 
-# Upstream configure requires GStreamer (no DISTRO_FEATURE gate).
 DEPENDS = "wayland libxkbcommon westeros-simplebuffer westeros-simpleshell virtual/westeros-soc \
            wayland-native gstreamer1.0 gstreamer1.0-plugins-base virtual/egl glib-2.0"
 
@@ -47,38 +46,25 @@ do_install:append() {
     install -d ${D}${bindir}
     install -m 0755 ${S}/systemd/westeros-init ${D}${bindir}/westeros-init
     install -m 0755 ${WORKDIR}/westeros-smoke.sh ${D}${bindir}/westeros-smoke.sh
-
-    # DRM/qemuarm: preload SoC GL interposer; match monorepo qemu-boot 1280x720.
-    sed -i \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_DEBUG=${WESTEROS_GL_DEBUG:-1}' \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_DRM_CARD=${WESTEROS_DRM_CARD:-/dev/dri/card0}' \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_USE_PREFERRED_MODE=${WESTEROS_GL_USE_PREFERRED_MODE:-1}' \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_GRAPHICS_MAX_SIZE=${WESTEROS_GL_GRAPHICS_MAX_SIZE:-1280x720}' \
-        -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_USER_PREFERRED_SIZE=${WESTEROS_GL_USER_PREFERRED_SIZE:-1280x720}' \
-        -e '/^exec \/usr\/bin\/westeros/i export LD_PRELOAD=${LD_PRELOAD:-/usr/lib/libwesteros_gl.so.0}' \
-        ${D}${bindir}/westeros-init
     sed -i -e "s#/usr/lib#${libdir}#g" ${D}${bindir}/westeros-init
 
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${S}/systemd/westeros-env ${D}${sysconfdir}/default/westeros-env
-    # KEY=VALUE only (EnvironmentFile); same knobs as meta-rpi-qemu westeros.bbappend.
-    printf '%s\n' \
-        'WESTEROS_DRM_CARD=/dev/dri/card0' \
-        'LD_PRELOAD=/usr/lib/libwesteros_gl.so.0.0.0' \
-        'WESTEROS_GL_USE_PREFERRED_MODE=1' \
-        'WESTEROS_GL_GRAPHICS_MAX_SIZE=1280x720' \
-        'WESTEROS_GL_USER_PREFERRED_SIZE=1280x720' \
-        >> ${D}${sysconfdir}/default/westeros-env
 
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${S}/systemd/westeros.service ${D}${systemd_system_unitdir}/westeros.service
 }
 
 SYSTEMD_SERVICE:${PN} = "westeros.service"
-# Start on demand for smoke tests; do not race DRM with getty on the same card.
 SYSTEMD_AUTO_ENABLE:${PN} = "disable"
 
 FILES:${PN} += "${sysconfdir}/default/westeros-env \
                 ${bindir}/westeros-smoke.sh \
                 ${systemd_system_unitdir}/westeros.service"
 FILES:${PN}-dev += "${includedir}/*.h"
+
+# Optional QEMU/virtio-gpu mode/env workarounds (1280x720, getty, auto-enable).
+# Empty on real targets; set via MACHINEOVERRIDES qemuall (e.g. qemuarm).
+WESTEROS_QEMU_INC ?= ""
+WESTEROS_QEMU_INC:qemuall = "westeros-qemu.inc"
+include ${WESTEROS_QEMU_INC}

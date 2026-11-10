@@ -24,14 +24,17 @@ DEPENDS = " \
 
 export WK_USE_CCACHE = "NO"
 
-# Minimal qemuarm: no proprietary DRM stack, no MiniBrowser/Qt/Thunder CDM.
+# Minimal qemuarm: no proprietary DRM/Qt/Thunder CDM.
 # Prefer classic libwpe + wpebackend-fdo (works against Westeros as Wayland).
 # gst_gl off — gstreamer1.0-plugins-base is built without EGL/GLES in Core.
+# MiniBrowser: simple Wayland launcher for smoke demos (e.g. HLS test page).
 PACKAGECONFIG ??= " \
     jit dfg-jit unified-builds webcrypto \
-    video webaudio mediasource \
+    video webaudio mediasource minibrowser \
     ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'journald', '', d)} \
 "
+# MiniBrowser Wayland tooling needs wayland-scanner + protocols at build time.
+PACKAGECONFIG[minibrowser] = "-DENABLE_MINIBROWSER=ON,-DENABLE_MINIBROWSER=OFF,wayland-native wayland-protocols libxkbcommon"
 
 PACKAGECONFIG[jit] = "-DENABLE_JIT=ON,-DENABLE_JIT=OFF,"
 PACKAGECONFIG[dfg-jit] = "-DENABLE_DFG_JIT=ON,-DENABLE_DFG_JIT=OFF,"
@@ -53,7 +56,6 @@ EXTRA_OECMAKE = " \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
-    -DENABLE_MINIBROWSER=OFF \
     -DDEVELOPER_MODE=OFF \
     -DENABLE_WPE_QT_API=OFF \
     -DENABLE_WPE_PLATFORM=OFF \
@@ -90,10 +92,12 @@ ARM_INSTRUCTION_SET:armv7ve = "thumb"
 
 LEAD_SONAME = "libWPEWebKit.so"
 
-PACKAGES =+ "${PN}-web-inspector-plugin"
+PACKAGES =+ "${PN}-web-inspector-plugin ${PN}-minibrowser"
 FILES:${PN} += "${libdir}/wpe-webkit*/injected-bundle/libWPEInjectedBundle.so"
 FILES:${PN}-web-inspector-plugin += "${libdir}/libWPEWebInspectorResources.so ${libdir}/wpe-webkit-*/libWPEWebInspectorResources.so"
 INSANE_SKIP:${PN}-web-inspector-plugin = "dev-so"
+FILES:${PN}-minibrowser = "${libexecdir}/wpe-webkit-*/MiniBrowser"
+RDEPENDS:${PN}-minibrowser = "${PN}"
 
 RDEPENDS:${PN} += " \
     libgles2 \

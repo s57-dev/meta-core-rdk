@@ -1,7 +1,6 @@
 SUMMARY = "RDK Core middleware package set (strict Core-V BOM)"
 DESCRIPTION = "Packages corresponding to middleware entries in \
-core-v-components.json. Recipes are added incrementally; empty RDEPENDS \
-is valid for Phase 1 boot-only images."
+core-v-components.json."
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
@@ -9,8 +8,6 @@ inherit packagegroup
 
 ALLOW_EMPTY:${PN} = "1"
 
-# Populated as meta-core-rdk recipes are authored. Keep in sync with
-# scripts/map-core-v.py output (status=ported).
 RDEPENDS:${PN} = " \
     rdk-logger \
     libsyswrapper \
@@ -32,9 +29,9 @@ RDEPENDS:${PN} = " \
     bluetooth-core \
     thunderjs \
     devicesettings-hal-headers \
-    devicesettings-hal-qemu \
+    ${PREFERRED_PROVIDER_virtual/vendor-devicesettings-hal} \
     devicesettings \
-    hdmicec-hal-qemu \
+    ${PREFERRED_PROVIDER_virtual/vendor-hdmicec-hal} \
     hdmicec \
     wpeframework-clientlibraries \
     bluetooth-mgr \
@@ -60,9 +57,9 @@ RDEPENDS:${PN} = " \
     iarmmgrs-hal-headers \
     entservices-connectivity \
     entservices-infra \
-    pwrmgr-hal-qemu \
-    deepsleepmgr-hal-qemu \
-    mfrlib-noop \
+    ${PREFERRED_PROVIDER_virtual/vendor-pwrmgr-hal} \
+    ${PREFERRED_PROVIDER_virtual/vendor-deepsleepmgr-hal} \
+    ${PREFERRED_PROVIDER_virtual/mfrlib} \
     iarmmgrs \
     entservices-powermanager \
     entservices-firmwareupdate \
@@ -84,21 +81,24 @@ RDEPENDS:${PN} = " \
     westeros \
     libwpe \
     wpewebkit \
+    wpewebkit-minibrowser \
+    wpe-demo-browser \
     wpebackend-fdo \
+    liberation-fonts \
     entservices-appmanagers \
     entservices-playerinfo \
     entservices-displayinfo \
     entservices-screencapture \
-    systemaudioplatform-hal-qemu \
+    ${PREFERRED_PROVIDER_virtual/vendor-systemaudioplatform} \
     entservices-mediaanddrm \
     essos \
     rdkwindowmanager \
     crun \
     dobby \
     dobby-thunderplugin \
-    audio-service-noop \
+    ${PREFERRED_PROVIDER_virtual/vendor-audio-service} \
     rdk-gstreamer-utils-headers \
-    rdk-gstreamer-utils-platform-qemu \
+    ${PREFERRED_PROVIDER_virtual/vendor-rdk-gstreamer-utils-platform} \
     rdk-gstreamer-utils \
     opencdm-stub \
     rialto-client \

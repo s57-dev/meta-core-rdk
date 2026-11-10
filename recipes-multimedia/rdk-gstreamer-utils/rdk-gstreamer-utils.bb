@@ -10,7 +10,7 @@ S = "${WORKDIR}/git"
 
 DEPENDS = "gstreamer1.0 gstreamer1.0-plugins-base virtual/vendor-audio-service \
            virtual/vendor-rdk-gstreamer-utils-platform rdk-gstreamer-utils-headers"
-RDEPENDS:${PN} += "gstreamer1.0 rdk-gstreamer-utils-platform-qemu"
+RDEPENDS:${PN} += "gstreamer1.0 ${PREFERRED_PROVIDER_virtual/vendor-rdk-gstreamer-utils-platform}"
 
 CXXFLAGS += "-I${STAGING_INCDIR}/glib-2.0 -I${STAGING_INCDIR}/gstreamer-1.0 \
              -I${STAGING_DIR_TARGET}${libdir}/glib-2.0/include"

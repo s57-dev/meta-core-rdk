@@ -5,11 +5,7 @@ LICENSE = "Apache-2.0"
 
 LICENSE_LOCATION = "${S}/LICENSE"
 LIC_FILES_CHKSUM = "file://${LICENSE_LOCATION};md5=7df5a8706277b586ca000838046993d1"
-SRC_URI = "${WESTEROS_SOC_URI} \
-           file://qemu-user-preferred-size.patch \
-           file://0001-westeros-gl-xrgb-fallback-virtio-gpu.patch \
-           file://0002-westeros-gl-drmModeAddFB2-use-gbm-format.patch \
-"
+SRC_URI = "${WESTEROS_SOC_URI}"
 
 S = "${WORKDIR}/git"
 
@@ -29,3 +25,8 @@ DEBIAN_NOAUTONAME:${PN}-dev = "1"
 DEBIAN_NOAUTONAME:${PN}-staticdev = "1"
 
 inherit autotools pkgconfig
+
+# Optional QEMU/virtio-gpu DRM patches (preferred size, XR24, AddFB2).
+WESTEROS_SOC_DRM_QEMU_INC ?= ""
+WESTEROS_SOC_DRM_QEMU_INC:qemuall = "westeros-soc-drm-qemu.inc"
+include ${WESTEROS_SOC_DRM_QEMU_INC}

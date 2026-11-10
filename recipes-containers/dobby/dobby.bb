@@ -7,6 +7,7 @@ include dobby.inc
 SRC_URI:append = " file://Fix_compile_gcc11.patch \
                    file://Add_config_header_kirkstone.patch \
                    file://dobby.generic.json \
+                   file://org.rdk.dobby.conf \
                    file://dobby_start_after_apparmor.patch \
                    file://secure_wrapper.patch \
 "
@@ -17,7 +18,6 @@ RDEPENDS:${PN} = "crun (>= 0.14.1) dobby-thunderplugin"
 
 S = "${WORKDIR}/git"
 
-# Core has no syslog-ng-config-gen / logrotate_config classes — systemd only.
 inherit pkgconfig cmake systemd
 
 python do_patch_new() {
@@ -28,7 +28,6 @@ addtask do_patch_new after do_configure before do_compile
 EXTRA_OECMAKE = "-DCMAKE_BUILD_TYPE=Debug -DBUILD_REFERENCE=${SRCREV} \
                  -DSETTINGS_FILE=DONT_INSTALL_DEVICESETTINGSFILE"
 
-# Slim qemu plugin set (omit gpu/ion/devicemapper from RDKE product append).
 PACKAGECONFIG ??= "logging networking ipc storage minidump oomcrash"
 PACKAGECONFIG[logging] = "-DPLUGIN_LOGGING=ON,-DPLUGIN_LOGGING=OFF,"
 PACKAGECONFIG[networking] = "-DPLUGIN_NETWORKING=ON,-DPLUGIN_NETWORKING=OFF,"
@@ -52,10 +51,22 @@ FILES_SOLIBSDEV = ""
 
 do_install:append() {
     install -d ${D}${sysconfdir}
+    install -m 0644 ${WORKDIR}/dobby.generic.json ${D}${sysconfdir}/dobby.json
     install -m 0644 ${WORKDIR}/dobby.generic.json ${D}${sysconfdir}/dobby.generic.json
+
+    install -d ${D}${sysconfdir}/dbus-1/system.d
+    install -m 0644 ${WORKDIR}/org.rdk.dobby.conf ${D}${sysconfdir}/dbus-1/system.d/org.rdk.dobby.conf
+
+    install -d ${D}/opt/persistent/rdk
+    install -d ${D}/var/volatile/rdk
 }
 
-FILES:${PN} += "${sysconfdir}/dobby.generic.json"
+FILES:${PN} += "${sysconfdir}/dobby.json \
+                ${sysconfdir}/dobby.generic.json \
+                ${sysconfdir}/dbus-1/system.d/org.rdk.dobby.conf \
+                /opt/persistent/rdk \
+                /var/volatile/rdk \
+"
 FILES:${PN} += "${systemd_system_unitdir}/dobby.service"
 FILES:${PN} += "${bindir}/DobbyTool"
 FILES:${PN} += "${sbindir}/DobbyDaemon"

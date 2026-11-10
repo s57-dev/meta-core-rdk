@@ -12,7 +12,6 @@ SRCREV_FORMAT = "essos"
 
 S = "${WORKDIR}/git"
 
-# No essosrmgr on Core qemu — enable "free" resmgr path.
 DEPENDS = "wayland virtual/egl libxkbcommon westeros"
 RDEPENDS:${PN} += "westeros"
 

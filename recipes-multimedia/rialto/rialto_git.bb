@@ -27,17 +27,18 @@ EXTRA_OECMAKE += "-DRIALTO_BUILD_TYPE=Debug"
 PACKAGES =+ "${PN}-client ${PN}-server ${PN}-servermanager-lib ${PN}-servermanager \
              ${PN}-client-dev ${PN}-server-dev ${PN}-servermanager-lib-dev ${PN}-servermanager-dev"
 
-# Slim qemu: server only (skip servermanager/mongoose until AppManagers needs it).
-PACKAGECONFIG ??= "server"
+# Full set by default; qemuarm keeps server-only (no mongoose) for a slim image.
+PACKAGECONFIG ??= "server servermanager"
+PACKAGECONFIG:qemuall = "server"
 PACKAGECONFIG[server] = "\
     -DENABLE_SERVER=ON,-DENABLE_SERVER=OFF, \
     wpeframework-clientlibraries gstreamer1.0 gstreamer1.0-plugins-base glib-2.0 \
     virtual/vendor-rdk-gstreamer-utils-platform rdk-gstreamer-utils"
 PACKAGECONFIG[servermanager] = "-DENABLE_SERVER_MANAGER=ON,-DENABLE_SERVER_MANAGER=OFF,mongoose,"
 
-RDEPENDS:${PN}-server += "rdk-gstreamer-utils-platform-qemu rdk-gstreamer-utils"
+RDEPENDS:${PN}-server += "${PREFERRED_PROVIDER_virtual/vendor-rdk-gstreamer-utils-platform} rdk-gstreamer-utils"
 RDEPENDS:${PN}-servermanager += "${PN}-server"
-RDEPENDS:${PN}-servermanager-lib += "rdk-gstreamer-utils-platform-qemu rdk-gstreamer-utils"
+RDEPENDS:${PN}-servermanager-lib += "${PREFERRED_PROVIDER_virtual/vendor-rdk-gstreamer-utils-platform} rdk-gstreamer-utils"
 
 FILES:${PN}-client += "${libdir}/libRialtoClient.so.*"
 FILES:${PN}-server += "${bindir}/RialtoServer"

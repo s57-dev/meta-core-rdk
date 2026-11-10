@@ -14,8 +14,6 @@ IMAGE_INSTALL = "\
     ${CORE_IMAGE_EXTRA_INSTALL} \
 "
 
-# QEMU-friendly rootfs formats
 IMAGE_FSTYPES = "ext4 tar.bz2"
 
-# Allow empty root password for development
 EXTRA_IMAGE_FEATURES += "debug-tweaks"
