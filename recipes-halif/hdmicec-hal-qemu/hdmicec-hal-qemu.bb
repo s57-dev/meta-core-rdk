@@ -11,10 +11,11 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 DEPENDS = "hdmicecheader"
 
-SRC_URI = "file://hdmi-cec-hal-stub.c \
-           file://CMakeLists.txt \
+SRC_URI = "file://hdmi-cec-hal-stub.c;subdir=src \
+           file://CMakeLists.txt;subdir=src \
 "
-S = "${WORKDIR}"
+
+S = "${WORKDIR}/src"
 
 inherit cmake
 

@@ -24,9 +24,12 @@ PROVIDES += "virtual/wpebackend"
 RPROVIDES:${PN} += "virtual-wpebackend"
 
 # MiniBrowser / libwpe loader look for unversioned and "default" sonames.
+# Keep them in ${PN} (not ${PN}-dev) so the runtime image can load the backend.
+FILES_SOLIBSDEV = ""
+INSANE_SKIP:${PN} += "dev-so"
 do_install:append() {
     ln -sf libWPEBackend-fdo-1.0.so.1 ${D}${libdir}/libWPEBackend-fdo-1.0.so
     ln -sf libWPEBackend-fdo-1.0.so.1 ${D}${libdir}/libWPEBackend-default.so
 }
 
-FILES:${PN} += "${libdir}/libWPEBackend-fdo-1.0.so ${libdir}/libWPEBackend-default.so"
+FILES:${PN} += "${libdir}/libWPEBackend-fdo-1.0.so ${libdir}/libWPEBackend-default.so ${libdir}/libWPEBackend-fdo-1.0.so.*"

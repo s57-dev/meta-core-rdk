@@ -1,7 +1,9 @@
 [Unit]
-Description=WPE MiniBrowser demo (HLS.js test page)
-After=westeros.service network-online.target
-Wants=westeros.service network-online.target
+Description=WPE MiniBrowser demo (YouTube TV)
+# Do not After=network-online: qemuarm's systemd-networkd-wait-online often
+# never becomes ready, which leaves this unit (and multi-user) stuck "waiting".
+After=westeros.service network.target
+Wants=westeros.service
 Requires=westeros.service
 
 [Service]
@@ -12,7 +14,7 @@ Environment=WPE_BACKEND_LIBRARY=/usr/lib/libWPEBackend-fdo-1.0.so.1
 Environment=WEBKIT_EXEC_PATH=/usr/libexec/wpe-webkit-2.0
 Environment=WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
 ExecStartPre=/bin/sh -c 'i=0; while [ ! -e /run/wayland-0 ] && [ $i -lt 60 ]; do i=$((i+1)); sleep 1; done; test -e /run/wayland-0'
-ExecStart=/usr/libexec/wpe-webkit-2.0/MiniBrowser --size=1280x720 https://hlsjs.video-dev.org/demo/
+ExecStart=/usr/libexec/wpe-webkit-2.0/MiniBrowser --size=1280x720 https://www.youtube.com/tv
 Restart=on-failure
 RestartSec=3
 

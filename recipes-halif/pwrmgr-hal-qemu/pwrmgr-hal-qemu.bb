@@ -13,11 +13,11 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 DEPENDS = "power-manager-headers"
 
-SRC_URI = "file://plat-power-stub.c \
-           file://CMakeLists.txt \
+SRC_URI = "file://plat-power-stub.c;subdir=src \
+           file://CMakeLists.txt;subdir=src \
 "
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/src"
 
 inherit cmake
 

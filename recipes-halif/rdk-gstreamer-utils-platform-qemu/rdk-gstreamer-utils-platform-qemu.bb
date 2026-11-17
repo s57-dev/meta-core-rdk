@@ -9,10 +9,11 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 DEPENDS = "gstreamer1.0 gstreamer1.0-plugins-base rdk-gstreamer-utils-headers"
 
-SRC_URI = "file://rdk_gstreamer_utils_soc_stub.cpp \
-           file://CMakeLists.txt \
+SRC_URI = "file://rdk_gstreamer_utils_soc_stub.cpp;subdir=src \
+           file://CMakeLists.txt;subdir=src \
 "
-S = "${WORKDIR}"
+
+S = "${WORKDIR}/src"
 
 inherit cmake pkgconfig
 

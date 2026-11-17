@@ -13,33 +13,33 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 DEPENDS = "devicesettings-hal-headers"
 
-SRC_URI = "file://ds-hal-stub.c \
-           file://CMakeLists.txt \
-           file://dsAudioSettings.h \
-           file://dsFPDSettings.h \
-           file://dsVideoDeviceSettings.h \
-           file://dsVideoPortSettings.h \
-           file://dsVideoResolutionSettings.h \
+SRC_URI = "file://ds-hal-stub.c;subdir=src \
+           file://CMakeLists.txt;subdir=src \
+           file://dsAudioSettings.h;subdir=src \
+           file://dsFPDSettings.h;subdir=src \
+           file://dsVideoDeviceSettings.h;subdir=src \
+           file://dsVideoPortSettings.h;subdir=src \
+           file://dsVideoResolutionSettings.h;subdir=src \
 "
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/src"
 
 inherit cmake
 
 do_install:append() {
     install -d ${D}${includedir}/rdk/halif/ds-hal
-    install -m 0644 ${WORKDIR}/dsAudioSettings.h ${D}${includedir}/rdk/halif/ds-hal/
-    install -m 0644 ${WORKDIR}/dsFPDSettings.h ${D}${includedir}/rdk/halif/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoDeviceSettings.h ${D}${includedir}/rdk/halif/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoPortSettings.h ${D}${includedir}/rdk/halif/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoResolutionSettings.h ${D}${includedir}/rdk/halif/ds-hal/
+    install -m 0644 ${S}/dsAudioSettings.h ${D}${includedir}/rdk/halif/ds-hal/
+    install -m 0644 ${S}/dsFPDSettings.h ${D}${includedir}/rdk/halif/ds-hal/
+    install -m 0644 ${S}/dsVideoDeviceSettings.h ${D}${includedir}/rdk/halif/ds-hal/
+    install -m 0644 ${S}/dsVideoPortSettings.h ${D}${includedir}/rdk/halif/ds-hal/
+    install -m 0644 ${S}/dsVideoResolutionSettings.h ${D}${includedir}/rdk/halif/ds-hal/
     # Also expose under legacy rdk/ds-hal path used by devicesettings includes
     install -d ${D}${includedir}/rdk/ds-hal
-    install -m 0644 ${WORKDIR}/dsAudioSettings.h ${D}${includedir}/rdk/ds-hal/
-    install -m 0644 ${WORKDIR}/dsFPDSettings.h ${D}${includedir}/rdk/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoDeviceSettings.h ${D}${includedir}/rdk/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoPortSettings.h ${D}${includedir}/rdk/ds-hal/
-    install -m 0644 ${WORKDIR}/dsVideoResolutionSettings.h ${D}${includedir}/rdk/ds-hal/
+    install -m 0644 ${S}/dsAudioSettings.h ${D}${includedir}/rdk/ds-hal/
+    install -m 0644 ${S}/dsFPDSettings.h ${D}${includedir}/rdk/ds-hal/
+    install -m 0644 ${S}/dsVideoDeviceSettings.h ${D}${includedir}/rdk/ds-hal/
+    install -m 0644 ${S}/dsVideoPortSettings.h ${D}${includedir}/rdk/ds-hal/
+    install -m 0644 ${S}/dsVideoResolutionSettings.h ${D}${includedir}/rdk/ds-hal/
     ln -sf libds-hal.so.0 ${D}${libdir}/libdshal.so
 }
 

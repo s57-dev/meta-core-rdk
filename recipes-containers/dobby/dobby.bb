@@ -58,14 +58,16 @@ do_install:append() {
     install -m 0644 ${WORKDIR}/org.rdk.dobby.conf ${D}${sysconfdir}/dbus-1/system.d/org.rdk.dobby.conf
 
     install -d ${D}/opt/persistent/rdk
-    install -d ${D}/var/volatile/rdk
+    # /var/volatile must stay empty in the package (QA empty-dirs); create at boot.
+    install -d ${D}${sysconfdir}/tmpfiles.d
+    echo 'd /var/volatile/rdk 0755 root root -' > ${D}${sysconfdir}/tmpfiles.d/dobby.conf
 }
 
 FILES:${PN} += "${sysconfdir}/dobby.json \
                 ${sysconfdir}/dobby.generic.json \
                 ${sysconfdir}/dbus-1/system.d/org.rdk.dobby.conf \
+                ${sysconfdir}/tmpfiles.d/dobby.conf \
                 /opt/persistent/rdk \
-                /var/volatile/rdk \
 "
 FILES:${PN} += "${systemd_system_unitdir}/dobby.service"
 FILES:${PN} += "${bindir}/DobbyTool"

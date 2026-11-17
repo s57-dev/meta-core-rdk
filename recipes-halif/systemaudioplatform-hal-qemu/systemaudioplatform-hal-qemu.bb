@@ -13,12 +13,12 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 DEPENDS = "gstreamer1.0 gstreamer1.0-plugins-base"
 
-SRC_URI = "file://systemaudioplatform-stub.cpp \
-           file://systemaudioplatform.h \
-           file://CMakeLists.txt \
+SRC_URI = "file://systemaudioplatform-stub.cpp;subdir=src \
+           file://systemaudioplatform.h;subdir=src \
+           file://CMakeLists.txt;subdir=src \
 "
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/src"
 
 inherit cmake pkgconfig
 

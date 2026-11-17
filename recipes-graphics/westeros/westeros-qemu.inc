@@ -1,15 +1,9 @@
-# QEMU/virtio-gpu workarounds for Westeros. Included only when MACHINEOVERRIDES
-# contains qemuall (see westeros.bb). Keep target-specific mode/env out of the
-# portable compositor recipe.
+# QEMU/virtio-gpu tweaks when MACHINEOVERRIDES includes qemuall (see westeros.bb).
 
-# usb-tablet uses ABS_X/ABS_Y; stock Westeros only handled REL motion.
 SRC_URI:append = " file://0002-westeros-evdev-abs-pointer-for-qemu-tablet.patch"
-
-# Auto-start compositor for qemu demos; stop getty@tty1 so DRM/KMS is free.
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 do_install:append() {
-    # Match kas QB_GRAPHICS 1280x720 + virtio-gpu preferred-size support.
     sed -i \
         -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_GL_DEBUG=${WESTEROS_GL_DEBUG:-1}' \
         -e '/^exec \/usr\/bin\/westeros/i export WESTEROS_DRM_CARD=${WESTEROS_DRM_CARD:-/dev/dri/card0}' \
@@ -20,7 +14,6 @@ do_install:append() {
         ${D}${bindir}/westeros-init
     sed -i -e "s#/usr/lib#${libdir}#g" ${D}${bindir}/westeros-init
 
-    # KEY=VALUE only (EnvironmentFile); same knobs as meta-rpi-qemu westeros.bbappend.
     if [ -f ${D}${sysconfdir}/default/westeros-env ]; then
         printf '%s\n' \
             'WESTEROS_DRM_CARD=/dev/dri/card0' \
@@ -31,7 +24,18 @@ do_install:append() {
             >> ${D}${sysconfdir}/default/westeros-env
     fi
 
+    # Unbind PS/2 mouse so only usb-tablet feeds Westeros.
+    cat > ${D}${bindir}/westeros-unbind-psmouse << 'EOF'
+#!/bin/sh
+for s in /sys/bus/serio/drivers/psmouse/serio*; do
+    [ -e "$s" ] || continue
+    echo -n "$(basename "$s")" > /sys/bus/serio/drivers/psmouse/unbind
+done
+EOF
+    chmod 0755 ${D}${bindir}/westeros-unbind-psmouse
+
     sed -i \
         -e '/^\[Service\]/a ExecStartPre=-/bin/systemctl stop getty@tty1.service' \
+        -e '/^\[Service\]/a ExecStartPre=-/usr/bin/westeros-unbind-psmouse' \
         ${D}${systemd_system_unitdir}/westeros.service
 }
